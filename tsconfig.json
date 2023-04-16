@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "types": [
       "webpack-env",
-      "jest"
+      "jest",
+      "vue-typescript-import-dts" //pacchetto npm che fornisce tipi TypeScript per i file .vue, in particolare risolvere fornisce tipi per le proprietà di Vue come $refs, $emit, $slots, $store
     ],
     "paths": {
       "@/*": [
