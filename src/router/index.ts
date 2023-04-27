@@ -37,15 +37,13 @@ const router = createRouter({
 router.beforeEach((to, from, next)=>{
   
   // se un'utente loggato cerca di andare alla pagina di login, viene mandato alla pagine home
-  if(to.path === '/login' && auth.currentUser){
-    alert("sei già loggato!");
+  if(to.name === 'login' && auth.currentUser){
     next('/');
     return;
   }
 
   // se un utente non loggato cerca di andare in una pagina che richiede il login, viene mandato al login
   if(to.matched.some(record => record.meta.requiresAuth) && !auth.currentUser){
-    alert("devi loggarti!");
     next('/login');
     return;
   }
