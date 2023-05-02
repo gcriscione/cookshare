@@ -16,7 +16,7 @@ export default class HomeView extends Vue {
   private store = useStore();
 
   get user(){
-    return this.store.getters.GET_USER.email;
+    return this.store.getters.GET_EMAIL;
   }
 }
 </script>

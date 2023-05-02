@@ -7,12 +7,16 @@
                 <input 
                     type="email"
                     placeholder="esempio@gmail.com" 
+                    autocomplete="username"
                     v-model="register_form.email"
+                    required
                 />
                 <input
-                    type="current-password"
+                    type="password"
+                    autocomplete="current-password"
                     placeholder="password"
                     v-model="register_form.password"
+                    required
                 />
                 <input
                     type="submit"
@@ -25,12 +29,16 @@
                 <input 
                     type="email"
                     placeholder="esempio@gmail.com" 
+                    autocomplete="username"
                     v-model="login_form.email"
+                    required
                 />
                 <input
-                    type="current-password"
+                    type="password"
+                    autocomplete="current-password"
                     placeholder="password"
                     v-model="login_form.password"
+                    required
                 />
                 <input
                     type="submit"
@@ -80,7 +88,7 @@ export default {
 
 
 <style>
-    .forms {
+    /* .forms {
         display: flex;
         min-height: 100vh;
     }
@@ -157,5 +165,5 @@ export default {
         border-radius: 0.5rem;
         cursor: pointer;
         text-transform: uppercase;
-    }
+    } */
 </style>

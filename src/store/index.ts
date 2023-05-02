@@ -1,6 +1,7 @@
 import { createStore } from 'vuex';
 import router from "@/router";
 import { auth } from '@/firebase';
+import { User } from '@firebase/auth'
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword,
@@ -9,17 +10,25 @@ import {
   signOut 
 } from 'firebase/auth';
 
+// Interfaccio dello stato
+interface MyState {
+  user: User | null;
+}
 
 export default createStore({
   state: {
 
-    user: null     //riferimento all'utente
+    user: null
 
   },
   getters: {
 
-    GET_USER(state){
+    GET_USER(state: MyState) : User | null{
       return state.user;
+    },
+
+    GET_EMAIL(state: MyState) : String {
+      return state.user?.email ?? "email non disponibile";
     }
 
   },
@@ -139,6 +148,9 @@ export default createStore({
           case "auth/network-request-failed":
             alert("errore di rete");
             break;
+          case "auth/admin-restricted-operation":
+            alert("Operazione non consentita");
+            break;
           default:
             alert("Errore sconosciuto:\n"+error);
             break;
@@ -188,6 +200,8 @@ export default createStore({
         }
       });
     }
+
+    
 
   },
   modules: {
