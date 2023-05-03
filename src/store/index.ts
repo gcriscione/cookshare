@@ -1,6 +1,6 @@
 import { createStore } from 'vuex';
 import router from "@/router";
-import { auth } from '@/firebase';
+import { auth, db } from '@/firebase';
 import { User } from '@firebase/auth'
 import { 
   createUserWithEmailAndPassword, 
@@ -9,16 +9,24 @@ import {
   signInWithPopup,
   signOut 
 } from 'firebase/auth';
+import {
+  collection,
+  addDoc,
+  getDocs,
+} from 'firebase/firestore';
+import { Recipe, Recipes } from '@/recipe';
 
 // Interfaccio dello stato
 interface MyState {
   user: User | null;
+  recipes: Recipes;
 }
 
 export default createStore({
   state: {
 
-    user: null
+    user: null,
+    recipes: {}
 
   },
   getters: {
@@ -27,18 +35,27 @@ export default createStore({
       return state.user;
     },
 
-    GET_EMAIL(state: MyState) : String {
+    GET_EMAIL(state: MyState){
       return state.user?.email ?? "email non disponibile";
+    },
+
+    GET_RECIPES(state: MyState) : Recipes{
+      return state.recipes ?? {};
     }
 
   },
   mutations: {
-    SET_USER(state, user) {
+    SET_USER(state: MyState, user: User){
       state.user = user;
     },
 
-    CLEAR_USER(state) {
+    SET_RECIPES(state: MyState, recipes: Recipes) {
+      state.recipes = recipes;
+    },
+
+    CLEAR_USER(state: MyState) {
       state.user = null;
+      state.recipes = {};
     }
   },
   actions: {
@@ -119,7 +136,7 @@ export default createStore({
     },
 
     //registrazione utente con email e password
-    async register({commit}, details){
+    async register({commit}, details: { email: string, password: string }){
       const { email, password } = details;
 
       //registra un utente presso Firebase
@@ -199,9 +216,68 @@ export default createStore({
           commit('SET_USER', user);
         }
       });
-    }
+    },
 
     
+    // Funzione per salvare una ricetta nel database riferite all'utente corrente
+    async addRecipe({ commit }, newRecipe: Recipe ) :Promise<void> {
+      try {
+        // verifica che l'utente sia autenticato
+        if(!this.state.user){
+          console.error("utente non loggato");
+          return ;
+        }
+
+        // ottiene l'ID dell'utente corrente
+        const userId = this.state.user.uid; 
+
+        // crea un riferimento collezione che contiene tutti i documenti delle ricette dell'utente corrente (users/USER_ID/recipes/)
+        const userRecipesRef = collection(db, "user", userId, "recipes");
+
+        // aggiunge alla collezione recipes il documento che contiene la nuova ricetta
+        await addDoc(userRecipesRef, newRecipe);        
+
+        // recupera tutti i documenti delle ricette dell'utente corrente
+        const userRecipesDocs = await getDocs(userRecipesRef);
+        const recipes : Recipes = {};
+        userRecipesDocs.forEach((doc) => {
+          recipes[doc.id] = (doc.data() as Recipe);
+        });
+
+        // controlla che la ricetta sia stata salvata correttamente nel database
+        if(!(userId in recipes)){
+          console.error("addRecipe:\nRecipe not saved correctly in the database");
+        }
+
+        commit('SET_RECIPES', recipes);
+        } catch (error) {
+          console.error("addRecipe:\nError saving recipe to database\n"+error);
+        }
+    },
+
+    // Funzione per prelevare le ricette nel database riferite all'utente corrente
+    async getRecipes({ commit }): Promise<void> {
+      // verifica che l'utente sia autenticato
+      if(!this.state.user){
+        console.error("utente non loggato");
+        return ;
+      }
+
+      // ottiene l'ID dell'utente corrente
+      const userId = this.state.user.uid; 
+
+      // crea un riferimento collezione che contiene tutti i documenti delle ricette dell'utente corrente (users/USER_ID/recipes/)
+      const userRecipesRef = collection(db, "user", userId, "recipes");
+      
+      // recupera tutti i documenti delle ricette dell'utente corrente
+      const userRecipesDocs = await getDocs(userRecipesRef);
+      const recipes : Recipes = {};
+      userRecipesDocs.forEach((doc) => {
+        recipes[doc.id] = (doc.data() as Recipe);
+      });
+
+      commit('SET_RECIPES', recipes);
+    }
 
   },
   modules: {

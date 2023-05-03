@@ -1,22 +1,61 @@
 <template>
   <main class="home">
     <h1>Home</h1>
-    <h3>
+    <h2>
       Ciao {{user}}
-    </h3>
-
+    </h2>
+    <button  @click="getRecipes">Scarica ricette</button>
+    <button  @click="addRecipe">Crea ricetta</button>
+    <RecipeList :recipes="recipes"/>
   </main>
 </template>
 
 <script lang="ts">
-import { Vue } from 'vue-class-component';
+import { Options, Vue } from 'vue-class-component';
 import { useStore } from 'vuex';
+import { Recipe, Recipes, createRecipe } from '@/recipe';
+import RecipeList from '@/components/RecipeList.vue';
+
+@Options({
+  components: {
+    RecipeList,
+  },
+})
 
 export default class HomeView extends Vue {
   private store = useStore();
 
+  getRecipes = () => {
+    alert("scarica");
+    this.store.dispatch('getRecipes');
+  }
+
+  addRecipe = () => {
+    alert("carica");
+    let newRecipe : Recipe = createRecipe(
+      "Pasta al pomodoro",
+      ["pasta", "pomodoro", "aglio"],
+      "Una deliziosa pasta con un sugo di pomodoro semplice ma saporito",
+      "Mario Rossi",
+      30,
+      4,
+      ["pasta", "cucina italiana"],
+      "https://www.example.com/images/pasta-pomodoro.jpg",
+      new Date()
+    );
+    this.store.dispatch('addRecipe', newRecipe);
+  }
+
+  get pp(){
+    return "pippo";
+  }
+
   get user(){
     return this.store.getters.GET_EMAIL;
+  }
+
+  get recipes(){
+    return this.store.getters.GET_RECIPES;
   }
 }
 </script>
