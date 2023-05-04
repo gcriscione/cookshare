@@ -1,12 +1,11 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import HomeView from '../views/HomeView.vue';
 import { auth } from '@/firebase';
 
 const routes: Array<RouteRecordRaw> = [
   { //path home
     path: '/',
     name: 'home',
-    component: HomeView,
+    component: () => import('../views/HomeView.vue'),
     meta: {
       requiresAuth: true
     }
