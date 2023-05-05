@@ -21,7 +21,6 @@ import RecipeList from '@/components/RecipeList.vue';
     RecipeList,
   },
 })
-
 export default class HomeView extends Vue {
   private store = useStore();
 
@@ -44,10 +43,6 @@ export default class HomeView extends Vue {
       new Date()
     );
     this.store.dispatch('addRecipe', newRecipe);
-  }
-
-  get pp(){
-    return "pippo";
   }
 
   get user(){
