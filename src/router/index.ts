@@ -22,6 +22,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/login',
     name: 'login',
     component: () => import('../views/LoginView.vue')
+  },
+  // Route catch-all per gestire gli URL non validi
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'not-found',
+    component: () => import('../views/NotFoundView.vue')
   }
 ]
 
@@ -30,25 +36,45 @@ const router = createRouter({
   routes
 })
 
+// Variable to keep track of whether the app has been initialized
+let appInitialized = false;
+
+// Set up an observer for when the authentication state changes (e.g., user logs in or out)
+// This helps ensure that the app is aware of the current user's authentication status
+auth.onAuthStateChanged(() => {
+  appInitialized = true;
+});
 
 // middleware di navigazione per controllore che l'utente che naviga abbia i permessi
 // per accedere a determinate pagine 
 router.beforeEach((to, from, next)=>{
-  
-  // se un'utente loggato cerca di andare alla pagina di login, viene mandato alla pagine home
-  if(to.name === 'login' && auth.currentUser){
+
+  const waitForFirebase = () => {
+    // Check if the app is initialized
+    if (appInitialized) {
+    // If a logged-in user tries to go to the login page, redirect them to the home page
+    if (to.name === 'login' && auth.currentUser) {
     next('/');
     return;
-  }
+    }
 
-  // se un utente non loggato cerca di andare in una pagina che richiede il login, viene mandato al login
-  if(to.matched.some(record => record.meta.requiresAuth) && !auth.currentUser){
-    next('/login');
-    return;
-  }
+    // If a non-logged-in user tries to go to a page that requires login, redirect them to the login page
+    if(to.matched.some(record => record.meta.requiresAuth) && !auth.currentUser){
+      next('/login');
+      return;
+    }
 
-  // altrimenti la navigazione prosegue normalmente
-  next();
+      // Otherwise, proceed with the navigation as normal
+      next();
+    } 
+    else {
+      // If the app is not initialized yet, wait for 50 milliseconds and then check again
+      setTimeout(waitForFirebase, 50);
+    }
+  };
+
+  // Call the 'waitForFirebase' function to handle the navigation based on the current authentication state
+  waitForFirebase();
 });
 
 export default router

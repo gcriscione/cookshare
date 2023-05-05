@@ -10,26 +10,21 @@
 </template>
 
 <script lang="ts">
-import { onBeforeMount } from 'vue'
 import { useStore } from 'vuex'
+import { defineComponent, onBeforeMount } from 'vue';
 
-
-export default{
-
-  setup(){
+export default defineComponent({
+  name: 'App',
+  setup() {
     const store = useStore();
-
+    
     onBeforeMount(() => {
-      //chiama la funzione che si occupa di controllare lo stato dell'utente
       store.dispatch('fetchUser');
     });
 
-    return {
-      user: store.state.user
-    }
-
-  }
-}
+    return {};
+  },
+});
 </script>
 
 <style lang="scss">

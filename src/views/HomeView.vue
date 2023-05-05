@@ -13,7 +13,7 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import { useStore } from 'vuex';
-import { Recipe, Recipes, createRecipe } from '@/recipe';
+import { Recipe, createRecipe } from '@/recipe';
 import RecipeList from '@/components/RecipeList.vue';
 
 @Options({
@@ -24,8 +24,11 @@ import RecipeList from '@/components/RecipeList.vue';
 export default class HomeView extends Vue {
   private store = useStore();
 
+  created(){
+    this.getRecipes();
+  }
+
   getRecipes = () => {
-    alert("scarica");
     this.store.dispatch('getRecipes');
   }
 
