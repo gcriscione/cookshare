@@ -1,55 +1,69 @@
 <template>
-    <main class="login">
-        <section class="forms">
-
-            <form class="register" @submit.prevent="register">
-                <h2>Registrazione</h2>
-                <input 
-                    type="email"
-                    placeholder="esempio@gmail.com" 
-                    autocomplete="username"
-                    v-model="register_form.email"
-                    required
-                />
-                <input
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="password"
-                    v-model="register_form.password"
-                    required
-                />
-                <input
-                    type="submit"
-                    value="register"
-                />
-            </form>
-
-            <form class="login" @submit.prevent="login">
-                <h2>Login</h2>
-                <input 
-                    type="email"
-                    placeholder="esempio@gmail.com" 
-                    autocomplete="username"
-                    v-model="login_form.email"
-                    required
-                />
-                <input
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="password"
-                    v-model="login_form.password"
-                    required
-                />
-                <input
-                    type="submit"
-                    value="login"
-                />
-            </form>
-
-            <button @:click="loginWithGoogle">Login with google</button>
-
-        </section>
-    </main>
+  <main class="container mt-5">
+    <section class="row">
+      <div class="col-md-6">
+        <form class="register border p-4" @submit.prevent="register">
+          <h2>Registrazione</h2>
+          <div class="mb-3">
+            <input
+              type="email"
+              class="form-control"
+              placeholder="esempio@gmail.com"
+              autocomplete="username"
+              v-model="register_form.email"
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              title="Inserisci un indirizzo email valido"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <input
+              type="password"
+              class="form-control"
+              autocomplete="current-password"
+              placeholder="password"
+              v-model="register_form.password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Register</button>
+        </form>
+      </div>
+      <div class="col-md-6">
+        <form class="login border p-4" @submit.prevent="login">
+          <h2>Login</h2>
+          <div class="mb-3">
+            <input
+              type="email"
+              class="form-control"
+              placeholder="esempio@gmail.com"
+              autocomplete="username"
+              v-model="login_form.email"
+              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              title="Inserisci un indirizzo email valido"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <input
+              type="password"
+              class="form-control"
+              autocomplete="current-password"
+              placeholder="password"
+              v-model="login_form.password"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+      </div>
+    </section>
+    <section class="row mt-4">
+      <div class="col-md-12">
+        <button class="btn btn-secondary" @click="loginWithGoogle">Login with Google</button>
+      </div>
+    </section>
+  </main>
 </template>
 
 

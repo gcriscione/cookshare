@@ -114,13 +114,13 @@ export default createStore({
             alert("L'account esiste con credenziali diverse");
             break;
           case "auth/cancelled-popup-request":
-            alert("Autenticazione annullata");
+            console.log("Autenticazione annullata");
             break;
           case "auth/popup-blocked":
             alert("il browser ha bloccato la finestra popup di autenticazione");
             break;
           case "auth/popup-closed-by-user":
-            alert("Autenticazione interrotta");
+            console.log("Autenticazione interrotta");
             break;
           case "auth/internal-error":
             alert("Errore di rete");

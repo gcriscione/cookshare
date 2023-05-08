@@ -3,11 +3,13 @@
     <h2>
         RecipeList
     </h2>
-    <recipe-item
-      v-for="recipe in recipes"
-      :key="recipe.id"
-      :recipe="recipe"
-    ></recipe-item>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+      <recipe-item
+        v-for="recipe in recipes"
+        :key="recipe.id"
+        :recipe="recipe"
+      ></recipe-item>
+    </div>
   </div>
 </template>
 

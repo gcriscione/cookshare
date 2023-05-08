@@ -42,7 +42,7 @@ export default class HomeView extends Vue {
       30,
       4,
       ["pasta", "cucina italiana"],
-      "https://www.example.com/images/pasta-pomodoro.jpg",
+      "http://www.gettyimages.com/detail/121306641",
       new Date()
     );
     this.store.dispatch('addRecipe', newRecipe);
