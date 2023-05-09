@@ -18,7 +18,7 @@ import RecipeList from '@/components/RecipeList.vue';
 
 @Options({
   components: {
-    RecipeList,
+    RecipeList
   },
 })
 export default class HomeView extends Vue {

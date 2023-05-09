@@ -2,6 +2,11 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import { auth } from '@/firebase';
 
 const routes: Array<RouteRecordRaw> = [
+  { //path login
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/LoginView.vue')
+  },
   { //path home
     path: '/',
     name: 'home',
@@ -10,18 +15,21 @@ const routes: Array<RouteRecordRaw> = [
       requiresAuth: true
     }
   },
-  { //path about
-    path: '/about',
-    name: 'about',
-    component: () => import('../views/AboutView.vue'),
+  {
+    path: '/profile',
+    name: 'profile',
+    component: () => import('../views/ProfileView.vue'),
     meta: {
       requiresAuth: true
     }
   },
-  { //path login
-    path: '/login',
-    name: 'login',
-    component: () => import('../views/LoginView.vue')
+  {
+    path: '/creator',
+    name: 'creator',
+    component: () => import('../views/RecipeCreatorView.vue'),
+    meta: {
+      requiresAuth: true
+    }
   },
   // Route catch-all per gestire gli URL non validi
   {
@@ -52,17 +60,17 @@ router.beforeEach((to, from, next)=>{
   const waitForFirebase = () => {
     // Check if the app is initialized
     if (appInitialized) {
-    // If a logged-in user tries to go to the login page, redirect them to the home page
-    if (to.name === 'login' && auth.currentUser) {
-    next('/');
-    return;
-    }
+      // If a logged-in user tries to go to the login page, redirect them to the home page
+      if (to.name === 'login' && auth.currentUser) {
+        next('/');
+        return;
+      }
 
-    // If a non-logged-in user tries to go to a page that requires login, redirect them to the login page
-    if(to.matched.some(record => record.meta.requiresAuth) && !auth.currentUser){
-      next('/login');
-      return;
-    }
+      // If a non-logged-in user tries to go to a page that requires login, redirect them to the login page
+      if(to.matched.some(record => record.meta.requiresAuth) && !auth.currentUser){
+        next('/login');
+        return;
+      }
 
       // Otherwise, proceed with the navigation as normal
       next();

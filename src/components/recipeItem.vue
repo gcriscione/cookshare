@@ -1,4 +1,3 @@
-<!-- RecipeCard.vue -->
 <template>
   <div class="col">
     <div class="card">

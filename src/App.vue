@@ -20,7 +20,10 @@
               <router-link class="nav-link" to="/" active-class="active">Home</router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" to="/about" active-class="active">About</router-link>
+              <router-link class="nav-link" to="/creator" active-class="active">Ricette</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link" to="/profile" active-class="active">Profilo</router-link>
             </li>
             <li class="nav-item" v-if="(!$store.state.user)">
               <router-link class="nav-link" to="/login" active-class="active">Login</router-link>
