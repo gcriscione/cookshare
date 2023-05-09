@@ -1,7 +1,7 @@
 <template>
     <main>    
         <div class="container">
-            <form @submit.prevent="submitForm">
+            <form>
               <div class="mb-3">
                   <label for="title" class="form-label">Titolo</label>
                   <input 
@@ -106,9 +106,9 @@
                   required />
               </div>
 
-              <button :disabled="isUnchanged()" type="submit" class="btn btn-warning">Modifica</button>
-              <button @click="resetRecipe" class="btn btn-success">Ripristina</button>
-              <button @click="deleteRecipe" class="btn btn-danger">Elimina</button>
+              <button :disabled="isUnchanged()" @click.prevent="editRecipe" class="btn btn-warning">Modifica</button>
+              <button @click.prevent="resetRecipe" class="btn btn-success">Ripristina</button>
+              <button @click.prevent="deleteRecipe" class="btn btn-danger">Elimina</button>
             </form>
         </div>
     </main>
@@ -117,6 +117,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
 import { Recipe } from '@/recipe';
+import { useStore } from 'vuex';
 
 export default defineComponent({
   name: 'RecipeCard',
@@ -131,11 +132,11 @@ export default defineComponent({
     },
   },
   methods: {
-    editRecipe() {
-      //this.$emit('edit', this.recipeId);
+    async editRecipe() {
+      await this.store.dispatch('editRecipe', { 'recipeId': this.recipeId, 'updatedRecipe': this.localRecipe });
     },
-    deleteRecipe() {
-      //this.$emit('delete', this.recipeId);
+    async deleteRecipe() {
+      await this.store.dispatch('removeRecipe', this.recipeId);
     },
     resetRecipe(){
       this.localRecipe = {...this.copieRecipe },
@@ -153,7 +154,8 @@ export default defineComponent({
     return {
       localRecipe: { ...this.recipe },
       copieRecipe: {...this.recipe},
-      editableElementId: null as string | null
+      editableElementId: null as string | null,
+      store: useStore()
     };
   },
 });

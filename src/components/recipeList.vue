@@ -27,11 +27,7 @@ export default defineComponent({
         recipes: {
             type: Object as () => Recipes,
             required: true,
-        },
-        email_user: {
-            type: String,
-            required: true,
-        }, 
+        }
     },
 });
 </script>

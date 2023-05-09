@@ -13,10 +13,13 @@ import {
   collection,
   addDoc,
   getDocs,
+  doc,
+  updateDoc,
+  deleteDoc
 } from 'firebase/firestore';
 import { Recipe, Recipes } from '@/recipe';
 
-// Interfaccio dello stato
+// Interfaccia dello stato
 interface MyState {
   user: User | null;
   recipes: Recipes;
@@ -214,13 +217,15 @@ export default createStore({
         }
         else{
           commit('SET_USER', user);
+          // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette con i nuovi dati
+          await this.dispatch('getRecipes');
         }
       });
     },
 
     
     // Funzione per salvare una ricetta nel database riferite all'utente corrente
-    async addRecipe({ commit }, newRecipe: Recipe ) :Promise<void> {
+    async addRecipe(_, newRecipe: Recipe ) :Promise<void> {
       try {
         // verifica che l'utente sia autenticato
         if(!this.state.user){
@@ -237,19 +242,8 @@ export default createStore({
         // aggiunge alla collezione recipes il documento che contiene la nuova ricetta
         await addDoc(userRecipesRef, newRecipe);        
 
-        // recupera tutti i documenti delle ricette dell'utente corrente
-        const userRecipesDocs = await getDocs(userRecipesRef);
-        const recipes : Recipes = {};
-        userRecipesDocs.forEach((doc) => {
-          recipes[doc.id] = (doc.data() as Recipe);
-        });
-
-        // controlla che la ricetta sia stata salvata correttamente nel database
-        if(!(userId in recipes)){
-          console.error("addRecipe:\nRecipe not saved correctly in the database");
-        }
-
-        commit('SET_RECIPES', recipes);
+        // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette con i nuovi dati
+        await this.dispatch('getRecipes');
         } catch (error) {
           console.error("addRecipe:\nError saving recipe to database\n"+error);
         }
@@ -277,6 +271,59 @@ export default createStore({
       });
 
       commit('SET_RECIPES', recipes);
+    },
+
+    // Funzione per modificare una ricetta
+    async editRecipe(_, { recipeId, updatedRecipe }: { recipeId: string; updatedRecipe: Recipe }) :Promise<void> {
+      try {
+        // verifica che l'utente sia autenticato
+        if (!this.state.user) {
+          console.error("utente non loggato");
+          return;
+        }
+
+        // ottiene l'ID dell'utente corrente
+        const userId = this.state.user.uid;
+
+        // crea un riferimento al documento della ricetta che si desidera modificare (users/USER_ID/recipes/RECIPE_ID)
+        const recipeDocRef = doc(db, "user", userId, "recipes", recipeId);
+
+        // aggiorna il documento con i nuovi dati della ricetta
+        await updateDoc(recipeDocRef, { ...updatedRecipe });
+
+        // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette con i nuovi dati
+        await this.dispatch('getRecipes');
+      } catch (error) {
+        console.error("editRecipe:\nError updating recipe in database\n" + error);
+      }
+    },
+
+    // Funzione per eliminare una ricetta
+    async removeRecipe(_, recipeId: string) :Promise<void> {
+      try {
+        // verifica che l'utente sia autenticato
+        if (!this.state.user) {
+          console.error("utente non loggato");
+          return;
+        }
+
+        // ottiene l'ID dell'utente corrente
+        const userId = this.state.user.uid;
+
+        // crea un riferimento alla collezione delle ricette dell'utente corrente (users/USER_ID/recipes/)
+        const userRecipesRef = collection(db, "user", userId, "recipes");
+
+        // crea un riferimento al documento della ricetta che si desidera eliminare
+        const recipeDocRef = doc(userRecipesRef, recipeId);
+
+        // elimina il documento della ricetta utilizzando deleteDoc
+        await deleteDoc(recipeDocRef);
+
+        // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette dopo l'eliminazione
+        await this.dispatch('getRecipes');
+      } catch (error) {
+        console.error("removeRecipe:\nError removing recipe from database\n" + error);
+      }
     }
 
   },
