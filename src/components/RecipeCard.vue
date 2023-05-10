@@ -133,10 +133,34 @@ export default defineComponent({
   },
   methods: {
     async editRecipe() {
-      await this.store.dispatch('editRecipe', { 'recipeId': this.recipeId, 'updatedRecipe': this.localRecipe });
+      try {
+        await this.store.dispatch('editRecipe', { 'recipeId': this.recipeId, 'updatedRecipe': this.localRecipe });
+        // Mostra un messaggio di successo
+        alert('Ricetta modificata con successo');
+        location.reload();
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          alert("Errore nella modifica della ricetta");
+          console.log("Errore nella modifica della ricetta:\n" + error.message);
+        } else {
+          console.log("Errore sconosciuto nella modifica della ricetta:\n" + error);
+        }
+      }
     },
     async deleteRecipe() {
-      await this.store.dispatch('removeRecipe', this.recipeId);
+      try {
+        await this.store.dispatch('removeRecipe', this.recipeId);
+        // Mostra un messaggio di successo
+        alert('Ricetta eliminata con successo');
+        location.reload();
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          alert("Errore nell'eliminazione della ricetta");
+          console.log("Errore nell'eliminazione della ricetta:\n"+error.message);
+        } else {
+          console.log("Errore sconosciuto nell'eliminazione della ricetta:\n"+error);
+        }
+      }
     },
     resetRecipe(){
       this.localRecipe = {...this.copieRecipe },

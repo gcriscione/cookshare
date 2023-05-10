@@ -23,13 +23,15 @@ import { Recipe, Recipes } from '@/recipe';
 interface MyState {
   user: User | null;
   recipes: Recipes;
+  socialRecipes: Recipes;
 }
 
 export default createStore({
   state: {
 
-    user: null,
-    recipes: {}
+    user: null,           // user reference
+    recipes: {},          // user's personal recipes
+    socialRecipes: {}     // shared recipes of other users
 
   },
   getters: {
@@ -43,7 +45,11 @@ export default createStore({
     },
 
     GET_RECIPES(state: MyState) : Recipes{
-      return state.recipes ?? {};
+      return state.recipes;
+    },
+
+    GET_SOCIAL_RECIPES(state: MyState) : Recipes{
+      return state.socialRecipes;
     }
 
   },
@@ -56,9 +62,14 @@ export default createStore({
       state.recipes = recipes;
     },
 
+    SET_SOCIAL_RECIPES(state: MyState, socialRecipes: Recipes) {
+      state.socialRecipes = socialRecipes;
+    },
+
     CLEAR_USER(state: MyState) {
       state.user = null;
       state.recipes = {};
+      state.socialRecipes = {}
     }
   },
   actions: {
@@ -70,30 +81,27 @@ export default createStore({
       const { email, password } = details;
 
       //prova ad eseguire l'autenticazione con firebase
-      await signInWithEmailAndPassword(auth, email, password).then((userCredential) => {
+      await signInWithEmailAndPassword(auth, email, password).then(async (userCredential) => {
 
         //se non ci sono eccezioni aggiorna lo stato utente ed effettua un router alla home
         commit('SET_USER', userCredential.user);
+        await this.dispatch('getRecipes');
+        await this.dispatch('getSocialRecipes');
         router.push('/');
       })
       .catch((error) => {
         //gestione degli errori
         switch(error.code){
           case "auth/user-not-found":
-            alert("Email non trovata\nSicuro di esserti registrato con questa email?");
-            break;
+            throw new Error("Email non trovata\nSicuro di esserti registrato con questa email?");
           case "auth/invalid-email":
-            alert("Email non valida");
-            break;
+            throw new Error("Email non valida");
           case "auth/wrong-password":
-            alert("Password errata");
-            break;
+            throw new Error("Password errata");
           case "auth/user-disabled":
-            alert("Utente disabilitato");
-            break;
+            throw new Error("Utente disabilitato");
           default:
-            alert("Errore sconosciuto:"+error);
-            break;
+            throw new Error("Errore sconosciuto:"+error);
         }
       });
     },
@@ -105,35 +113,32 @@ export default createStore({
 
       //esegue l'accesso tramite popup con account google
       signInWithPopup(auth, provider)
-        .then((result) => {
+        .then(async (result) => {
           //se non ci sono eccezioni aggiorna lo stato utente ed effettua un router alla home
           commit('SET_USER', result.user);
+          await this.dispatch('getRecipes');
+          await this.dispatch('getSocialRecipes');
           router.push('/');
         })
         .catch((error) => {
           //gestione dei codici di errore
           switch(error.code){
           case "auth/account-exists-with-different-credential":
-            alert("L'account esiste con credenziali diverse");
-            break;
+            throw new Error("L'account esiste con credenziali diverse");
           case "auth/cancelled-popup-request":
             console.log("Autenticazione annullata");
             break;
           case "auth/popup-blocked":
-            alert("il browser ha bloccato la finestra popup di autenticazione");
-            break;
+            throw new Error("il browser ha bloccato la finestra popup di autenticazione");
           case "auth/popup-closed-by-user":
             console.log("Autenticazione interrotta");
             break;
           case "auth/internal-error":
-            alert("Errore di rete");
-            break;
+            throw new Error("Errore di rete");
           case "auth/unauthorized-domain":
-            alert("Dominio non autorizzato per l'utilizzo delle API Firebase");
-            break;
+            throw new Error("Dominio non autorizzato per l'utilizzo delle API Firebase");
           default:
-            alert("Errore sconosciuto:"+error);
-            break;
+            throw new Error("Errore sconosciuto:"+error);
         }
         });
     },
@@ -154,26 +159,19 @@ export default createStore({
         //gestione dei codici di errore
         switch(error.code){
           case "auth/email-already-in-use":
-            alert("Questa email è già associata ad un account registrata");
-            break;
+            throw new Error("Questa email è già associata ad un account registrata");
           case "auth/invalid-email":
-            alert("Email non valida");
-            break;
+            throw new Error("Email non valida");
           case "auth/operation-not-allowed":
-            alert("utente non autorizzato");
-            break;
+            throw new Error("utente non autorizzato");
           case "auth/weak-password":
-            alert("Password non sufficientemente sicura");
-            break;
+            throw new Error("Password non sufficientemente sicura");
           case "auth/network-request-failed":
-            alert("errore di rete");
-            break;
+            throw new Error("errore di rete");
           case "auth/admin-restricted-operation":
-            alert("Operazione non consentita");
-            break;
+            throw new Error("Operazione non consentita");
           default:
-            alert("Errore sconosciuto:\n"+error);
-            break;
+            throw new Error("Errore sconosciuto:\n"+error);
         }
       });
     },
@@ -191,19 +189,15 @@ export default createStore({
         // gestione dei codici di errore
         switch (error.code) {
           case "auth/network-request-failed":
-            alert("Errore di rete durante la richiesta di logout.");
-            break;
+            throw new Error("Errore di rete durante la richiesta di logout.");
           case "auth/too-many-requests":
-            alert("Troppe richieste di logout effettuate.");
-            break;
+            throw new Error("Troppe richieste di logout effettuate.");
           case "auth/user-token-expired":
-            alert("Il token dell'utente è scaduto.");
-            break;
+            throw new Error("Il token dell'utente è scaduto.");
           case "auth/user-not-found":
-            alert("Utente non trovato.");
-            break;
+            throw new Error("Utente non trovato.");
           default:
-            alert("Errore sconosciuto durante il logout.");
+            throw new Error("Errore sconosciuto durante il logout.");
         }
       });
 
@@ -219,58 +213,85 @@ export default createStore({
           commit('SET_USER', user);
           // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette con i nuovi dati
           await this.dispatch('getRecipes');
+          await this.dispatch('getSocialRecipes');
         }
       });
     },
 
+    // Action about recipe ------------------------------------------------------------------------
+    // Funzione per prelevare le ricette riferite all'utente corrente nel database 
+    async getRecipes({ commit }): Promise<void> {
+      // verifica che l'utente sia autenticato
+      if(!this.state.user){
+        throw new Error("utente non loggato");
+      }
+
+      try {
+        // crea un riferimento alla collezione "user" del database
+        const recipesRef = collection(db, "recipes");
+
+        const recipes: Recipes = {};
+
+        // recupera tutti i documenti degli utenti
+        const recipeDocs = await getDocs(recipesRef);
+        recipeDocs.forEach((doc) => {
+          recipes[doc.id] = (doc.data() as Recipe);
+        });
+
+        commit('SET_RECIPES', recipes);
+      } catch (error) {
+        throw new Error(`Errore scaricamento ricette:\n${error}`);
+      }
+    },
     
+    // Funzione per prelevare le ricette degli altri utenti nel database
+    async getSocialRecipes({ commit }): Promise<void> {
+      // verifica che l'utente sia autenticato
+      if(!this.state.user){
+        throw new Error("utente non loggato");
+      }
+
+      try {
+        // crea un riferimento alla collezione "user" del database
+        const recipesRef = collection(db, "recipes");
+
+        const socialRecipes: Recipes = {};
+
+        // recupera tutti i documenti degli utenti
+        const recipeDocs = await getDocs(recipesRef);
+        recipeDocs.forEach((doc) => {
+          socialRecipes[doc.id] = (doc.data() as Recipe);
+        });
+        
+        commit('SET_SOCIAL_RECIPES', socialRecipes);
+      } catch (error) {
+        throw new Error(`Errore scaricamento ricette degli altri utenti:\n${error}`);
+      }
+    },
+
     // Funzione per salvare una ricetta nel database riferite all'utente corrente
     async addRecipe(_, newRecipe: Recipe ) :Promise<void> {
       try {
         // verifica che l'utente sia autenticato
         if(!this.state.user){
-          console.error("utente non loggato");
-          return ;
+          throw new Error("Utente non loggato");
         }
 
         // ottiene l'ID dell'utente corrente
         const userId = this.state.user.uid; 
 
         // crea un riferimento collezione che contiene tutti i documenti delle ricette dell'utente corrente (users/USER_ID/recipes/)
-        const userRecipesRef = collection(db, "user", userId, "recipes");
+        const userRecipesRef = collection(db, "recipes");
 
         // aggiunge alla collezione recipes il documento che contiene la nuova ricetta
         await addDoc(userRecipesRef, newRecipe);        
 
         // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette con i nuovi dati
         await this.dispatch('getRecipes');
-        } catch (error) {
-          console.error("addRecipe:\nError saving recipe to database\n"+error);
-        }
-    },
-
-    // Funzione per prelevare le ricette nel database riferite all'utente corrente
-    async getRecipes({ commit }): Promise<void> {
-      // verifica che l'utente sia autenticato
-      if(!this.state.user){
-        console.error("utente non loggato");
-        return ;
+        await this.dispatch('getSocialRecipes');
+      } catch (error) {
+        throw new Error(`Errore salvataggio nuova ricetta:\n${error}`);
       }
-
-      // ottiene l'ID dell'utente corrente
-      const userId = this.state.user.uid; 
-
-      // crea un riferimento collezione che contiene tutti i documenti delle ricette dell'utente corrente (users/USER_ID/recipes/)
-      const userRecipesRef = collection(db, "user", userId, "recipes");
-      
-      // recupera tutti i documenti delle ricette dell'utente corrente
-      const userRecipesDocs = await getDocs(userRecipesRef);
-      const recipes : Recipes = {};
-      userRecipesDocs.forEach((doc) => {
-        recipes[doc.id] = (doc.data() as Recipe);
-      });
-
-      commit('SET_RECIPES', recipes);
     },
 
     // Funzione per modificare una ricetta
@@ -278,23 +299,20 @@ export default createStore({
       try {
         // verifica che l'utente sia autenticato
         if (!this.state.user) {
-          console.error("utente non loggato");
-          return;
+          throw new Error(`utente non loggato`);
         }
-
-        // ottiene l'ID dell'utente corrente
-        const userId = this.state.user.uid;
-
+        
         // crea un riferimento al documento della ricetta che si desidera modificare (users/USER_ID/recipes/RECIPE_ID)
-        const recipeDocRef = doc(db, "user", userId, "recipes", recipeId);
+        const recipeDocRef = doc(db, "recipes", recipeId);
 
         // aggiorna il documento con i nuovi dati della ricetta
         await updateDoc(recipeDocRef, { ...updatedRecipe });
 
         // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette con i nuovi dati
         await this.dispatch('getRecipes');
+        await this.dispatch('getSocialRecipes');
       } catch (error) {
-        console.error("editRecipe:\nError updating recipe in database\n" + error);
+        throw new Error(`Errore modifica:\n${error}`);
       }
     },
 
@@ -303,15 +321,11 @@ export default createStore({
       try {
         // verifica che l'utente sia autenticato
         if (!this.state.user) {
-          console.error("utente non loggato");
-          return;
+          throw new Error("Utente non loggato");
         }
 
-        // ottiene l'ID dell'utente corrente
-        const userId = this.state.user.uid;
-
         // crea un riferimento alla collezione delle ricette dell'utente corrente (users/USER_ID/recipes/)
-        const userRecipesRef = collection(db, "user", userId, "recipes");
+        const userRecipesRef = collection(db, "recipes");
 
         // crea un riferimento al documento della ricetta che si desidera eliminare
         const recipeDocRef = doc(userRecipesRef, recipeId);
@@ -321,8 +335,9 @@ export default createStore({
 
         // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette dopo l'eliminazione
         await this.dispatch('getRecipes');
+        await this.dispatch('getSocialRecipes');
       } catch (error) {
-        console.error("removeRecipe:\nError removing recipe from database\n" + error);
+        throw new Error(`Errore cancellazione:\n${error}`);
       }
     }
 

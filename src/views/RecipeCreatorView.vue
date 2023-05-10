@@ -101,6 +101,8 @@ export default class RecipeCreatorView extends Vue {
         this.newRecipe = createRecipe('', [], '', '', 1, 1, [], '', new Date());
         this.ingredientsInput = '';
         this.tagsInput = '';
+        this.showDiv = false;
+        alert("Creata");
     }
 
     changeShowDiv = () =>{

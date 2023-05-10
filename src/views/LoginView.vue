@@ -77,16 +77,43 @@ export default {
         const register_form = ref({});
         const store = useStore();
 
-        const login = () => {
-            store.dispatch('login', login_form.value);
+        const login = async () => {
+          try {
+            await store.dispatch('login', login_form.value);
+          } catch (error: unknown) {
+            if (error instanceof Error) {
+              alert("Errore Login\n"+error.message);
+              console.error("Errore nel login con email e password:\n"+error.message);
+            } else {
+              console.error("Errore nel login con email e password:\n"+error);
+            }
+          }
         }
 
-        const loginWithGoogle = () => {
-            store.dispatch('loginWithGoogle');
+        const loginWithGoogle = async () => {
+          try {
+            await store.dispatch('loginWithGoogle');
+          } catch (error: unknown) {
+            if (error instanceof Error) {
+              alert("Errore Login\n"+error.message);
+              console.error("Errore nel login con google:\n"+error.message);
+            } else {
+              console.error("Errore nel login con google:\n"+error);
+            }
+          }
         }
 
         const register = async () =>{
-            store.dispatch('register', register_form.value);
+          try {
+            await store.dispatch('register', register_form.value);
+          } catch (error: unknown) {
+            if (error instanceof Error) {
+              alert("Errore registrazione\n"+error.message);
+              console.error("Errore nella registrazione con email e password:\n"+error.message);
+            } else {
+              console.error("Errore nella registrazione con email e password:\n"+error);
+            }
+          }
         }
 
         return {
