@@ -2,7 +2,8 @@ export interface Recipe {
     title: string;          // titolo della ricetta
     ingredients: string[];  // un array di stringhe contenente gli ingredienti necessari per la ricetta
     description: string;    // descrizione 
-    author: string;         // nome dell'autore della ricetta
+    email_author: string;   // nome dell'autore della ricetta
+    idUser: string;         // identificativo utente
     prepTime: number;       // tempo di preparazione della ricetta (in minuti)
     servings: number;       // numero di porzioni che la ricetta produce
     tags: string[];         // array di stringhe contenente le etichette o le categorie a cui appartiene
@@ -19,7 +20,8 @@ export function
         title: string,
         ingredients: string[],
         description: string,
-        author: string,
+        email_author: string,
+        idUser: string,
         prepTime: number,
         servings: number,
         tags: string[],
@@ -30,7 +32,8 @@ export function
             title,
             ingredients,
             description,
-            author,
+            email_author,
+            idUser,
             prepTime,
             servings,
             tags,

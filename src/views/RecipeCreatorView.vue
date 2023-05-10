@@ -12,11 +12,6 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="author" class="form-label">Autore</label>
-                    <input type="text" class="form-control" id="author" v-model="newRecipe.author" maxlength="50" required />
-                </div>
-
-                <div class="mb-3">
                     <label for="description" class="form-label">Descrizione</label>
                     <textarea class="form-control" id="description" v-model="newRecipe.description" rows="3" maxlength="1000" required></textarea>
                 </div>
@@ -80,7 +75,7 @@ import { Recipe, createRecipe } from '@/recipe';
 })
 export default class RecipeCreatorView extends Vue {
     private store = useStore();
-    private newRecipe: Recipe = createRecipe('', [], '', '', 1, 1, [], '', new Date());
+    private newRecipe: Recipe = createRecipe('', [], '', '', '', 1, 1, [], '', new Date());
     private showDiv = false;
     private ingredientsInput = '';
     private tagsInput = '';
@@ -95,10 +90,12 @@ export default class RecipeCreatorView extends Vue {
 
     createRecipe = async () =>{
         this.newRecipe.date = new Date();
+        this.newRecipe.email_author = this.email_user;
+        this.newRecipe.idUser = this.id_user;
 
         await this.store.dispatch('addRecipe', this.newRecipe);
 
-        this.newRecipe = createRecipe('', [], '', '', 1, 1, [], '', new Date());
+        this.newRecipe = createRecipe('', [], '', '', '', 1, 1, [], '', new Date());
         this.ingredientsInput = '';
         this.tagsInput = '';
         this.showDiv = false;
@@ -120,6 +117,14 @@ export default class RecipeCreatorView extends Vue {
 
     get recipes() {
         return this.store.getters.GET_RECIPES;
+    }
+
+    get email_user(){
+        return this.store.getters.GET_EMAIL;
+    }
+
+    get id_user(){
+        return this.store.getters.GET_ID_USER;
     }
 }
 </script>

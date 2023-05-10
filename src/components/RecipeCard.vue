@@ -42,15 +42,14 @@
               </div>
 
               <div class="mb-3">
-                  <label for="author" class="form-label">Autore</label>
+                  <label for="author" class="form-label">Email Autore</label>
                   <input
                     type="text"
                     class="form-control"
                     id="author"
-                    v-model="localRecipe.author"
+                    v-model="localRecipe.email_author"
                     maxlength="50"
-                    :readonly="editableElementId !== 'author'"
-                    @dblclick="makeEditable"
+                    :readonly="true"
                   required />
               </div>
 

@@ -8,8 +8,14 @@
 
         <div class="container">
           <div class="row">
-            <div class="col-md-6 text-end">Autore:</div>
-            <div class="col-md-6 text-start"><strong>{{ recipe.author }}</strong></div>
+            <div class="col-md-6 text-end">Email Autore:</div>
+            <div class="col-md-6 text-start">
+              <strong>
+                <a :href="'mailto:' + email_author">
+                  {{ recipe.email_author }}
+                </a>
+              </strong>
+            </div>
           </div>
           <div class="row">
             <div class="col-md-6 text-end">Data pubblicazione:</div>

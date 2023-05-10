@@ -15,7 +15,9 @@ import {
   getDocs,
   doc,
   updateDoc,
-  deleteDoc
+  deleteDoc,
+  query,
+  where
 } from 'firebase/firestore';
 import { Recipe, Recipes } from '@/recipe';
 
@@ -38,6 +40,10 @@ export default createStore({
 
     GET_USER(state: MyState) : User | null{
       return state.user;
+    },
+
+    GET_ID_USER(state: MyState){
+      return state.user?.uid ?? "";
     },
 
     GET_EMAIL(state: MyState){
@@ -230,10 +236,16 @@ export default createStore({
         // crea un riferimento alla collezione "user" del database
         const recipesRef = collection(db, "recipes");
 
+        // filtra i documenti dove il campo "idUtente" corrisponde all'ID dell'utente attualmente loggato
+        const userRecipesQuery = query(
+          recipesRef,
+          where("idUser", "==", this.state.user.uid)
+        );
+
         const recipes: Recipes = {};
 
         // recupera tutti i documenti degli utenti
-        const recipeDocs = await getDocs(recipesRef);
+        const recipeDocs = await getDocs(userRecipesQuery);
         recipeDocs.forEach((doc) => {
           recipes[doc.id] = (doc.data() as Recipe);
         });
@@ -275,10 +287,7 @@ export default createStore({
         // verifica che l'utente sia autenticato
         if(!this.state.user){
           throw new Error("Utente non loggato");
-        }
-
-        // ottiene l'ID dell'utente corrente
-        const userId = this.state.user.uid; 
+        } 
 
         // crea un riferimento collezione che contiene tutti i documenti delle ricette dell'utente corrente (users/USER_ID/recipes/)
         const userRecipesRef = collection(db, "recipes");
