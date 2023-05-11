@@ -29,7 +29,7 @@
               <router-link class="nav-link" to="/login" active-class="active">Login</router-link>
             </li>
             <li class="nav-item" v-if="$store.state.user">
-              <button class="nav-link" @click="$store.dispatch('logout')">Logout</button>
+              <button class="nav-link btn" @click="$store.dispatch('logout')">Logout</button>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
@@ -74,6 +74,7 @@ export default defineComponent({
 
 nav {
   padding: 30px;
+  margin-bottom: 2rem;
 
   a {
     font-weight: bold;

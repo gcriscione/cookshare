@@ -39,11 +39,11 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="imageURL" class="form-label">URL dell'immagine</label>
-                    <input type="url" class="form-control" id="imageURL" v-model="newRecipe.imageURL" required />
+                    <label for="image" class="form-label">Carica immagine</label>
+                    <input type="file" class="form-control" id="image" @change="uploadImage" accept="image/*" required />
                 </div>
 
-                <button type="submit" class="btn btn-primary">Crea ricetta</button>
+                <button type="submit" class="btn btn-primary" :disabled="isLoading">Crea ricetta</button>
             </form>
         </div>
 
@@ -59,6 +59,10 @@
             :recipe="recipe"
             :recipeId="id"
         ></RecipeCard>
+
+        <div v-if="isLoading" class="loading-spinner-container">
+            <div class="loading-spinner"></div>
+        </div>
     </main>
 </template>
 
@@ -67,6 +71,8 @@ import { Vue, Options } from 'vue-class-component';
 import RecipeCard from '@/components/RecipeCard.vue';
 import { useStore } from 'vuex';
 import { Recipe, createRecipe } from '@/recipe';
+import { storage } from '@/firebase/index';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 @Options({
   components: {
@@ -79,6 +85,8 @@ export default class RecipeCreatorView extends Vue {
     private showDiv = false;
     private ingredientsInput = '';
     private tagsInput = '';
+    private imageFile= null as File | null;
+    private isLoading = false;
 
     created(){
         this.getRecipes();
@@ -88,19 +96,53 @@ export default class RecipeCreatorView extends Vue {
         this.store.dispatch('getRecipes');
     }
 
-    createRecipe = async () =>{
-        this.newRecipe.date = new Date();
-        this.newRecipe.email_author = this.email_user;
-        this.newRecipe.idUser = this.id_user;
+    createRecipe = async () => {
+        this.isLoading = true;
+        try {
+            // Controlla se un'immagine è stata caricata
+            if (!this.imageFile) {
+                alert("Seleziona un'immagine");
+                return;
+            }
 
-        await this.store.dispatch('addRecipe', this.newRecipe);
+            // carica l'immagine su firebase storage e prende il riferimento
+            try {
+                // Aggiungi il codice per caricare l'immagine su Firebase Storage e ottenere il suo URL di download
+                const storageRef = ref(storage, `imagesRecipes/${this.imageFile.name}`);
+                const snapshot = await uploadBytes(storageRef, this.imageFile);
+                const downloadURL = await getDownloadURL(snapshot.ref);
+    
+                // Memorizza l'URL di download nell'apposito campo imageURL
+                this.newRecipe.imageURL = downloadURL;
+            } catch (error) {
+                console.error("Errore durante il caricamento dell'immagine su firebase storage:", error);
+                alert("Si è verificato un errore durante il caricamento dell'immagine sul database. Riprova.");
+                this.isLoading = false;
+                return;
+            }
 
-        this.newRecipe = createRecipe('', [], '', '', '', 1, 1, [], '', new Date());
-        this.ingredientsInput = '';
-        this.tagsInput = '';
-        this.showDiv = false;
-        alert("Creata");
-    }
+
+            this.newRecipe.date = new Date();
+            this.newRecipe.email_author = this.email_user;
+            this.newRecipe.idUser = this.id_user;
+
+            await this.store.dispatch('addRecipe', this.newRecipe);
+
+            this.newRecipe = createRecipe('', [], '', '', '', 1, 1, [], '', new Date());
+            this.ingredientsInput = '';
+            this.tagsInput = '';
+            this.showDiv = false;
+            this.imageFile = null;
+            alert("Nuova ricetta creata");
+                
+        } catch (error) {
+            console.error("Errore durante il caricamento della nuova ricetta nel database:", error);
+            alert("Si è verificato un errore durante il caricamento della nuova ricetta nel database. Riprova.");
+        }
+        finally {
+            this.isLoading = false;
+        }
+    };
 
     changeShowDiv = () =>{
         this.showDiv = !this.showDiv
@@ -112,6 +154,13 @@ export default class RecipeCreatorView extends Vue {
             this.newRecipe.ingredients = this.ingredientsInput.split(',').map(item => item.trim()).filter(item => item.length > 0);
         } else if (property === 'tags') {
             this.newRecipe.tags = this.tagsInput.split(',').map(item => item.trim()).filter(item => item.length > 0);
+        }
+    }
+
+    async uploadImage(event: Event) {
+        const file = (event.target as HTMLInputElement).files?.[0];
+        if (file) {
+            this.imageFile = file;
         }
     }
 
@@ -130,5 +179,34 @@ export default class RecipeCreatorView extends Vue {
 </script>
 
 <style scoped>
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
 
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #ccc;
+  border-top-color: #3f51b5;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 </style>

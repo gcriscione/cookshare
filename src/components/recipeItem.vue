@@ -11,7 +11,7 @@
             <div class="col-md-6 text-end">Email Autore:</div>
             <div class="col-md-6 text-start">
               <strong>
-                <a :href="'mailto:' + email_author">
+                <a :href="'mailto:' + recipe.email_author">
                   {{ recipe.email_author }}
                 </a>
               </strong>
