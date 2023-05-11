@@ -72,6 +72,11 @@ export default defineComponent({
   color: #2c3e50;
 }
 
+.navbar {
+  background-color: red;
+  color: #fff;
+}
+
 nav {
   padding: 30px;
   margin-bottom: 2rem;

@@ -1,6 +1,7 @@
 <template>
     <main>    
-        <div class="container">
+        <div class="container recipe-card">
+            <br>
             <form>
               <div class="mb-3">
                   <label for="title" class="form-label">Titolo</label>
@@ -109,7 +110,9 @@
               <button @click.prevent="resetRecipe" class="btn btn-success">Ripristina</button>
               <button @click.prevent="deleteRecipe" class="btn btn-danger">Elimina</button>
             </form>
+            <br>
         </div>
+        <br><br><br>
     </main>
 </template>
 
@@ -184,4 +187,15 @@ export default defineComponent({
 });
 </script>
 
+<style scoped>
+.recipe-card{
+  background-color: #FFD8A9;
+  border-radius: 3%;
+  box-shadow: 5px 5px 10px 1px #E38B29;
+}
 
+.btn{
+  margin: 1rem;
+  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.445);
+}
+</style>

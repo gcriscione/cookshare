@@ -6,32 +6,30 @@
         <h5 class="card-title"><strong>{{ recipe.title }}</strong></h5>
         <p class="card-text">{{ recipe.description }}</p>
 
-        <div class="container">
-          <div class="row">
-            <div class="col-md-6 text-end">Email Autore:</div>
-            <div class="col-md-6 text-start">
-              <strong>
-                <a :href="'mailto:' + recipe.email_author">
-                  {{ recipe.email_author }}
-                </a>
-              </strong>
+        <div class="d-flex justify-content-center">
+          <div>
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-4">Email Autore:</div>
+              <div>
+                <strong>
+                  <a :href="'mailto:' + recipe.email_author">{{ recipe.email_author }}</a>
+                </strong>
+              </div>
+            </div>
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-4">Data pubblicazione:</div>
+              <div><strong>{{ formatDate(recipe.date) }}</strong></div>
+            </div>
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-4">Tempo di preparazione:</div>
+              <div><strong>{{ recipe.prepTime }} minuti</strong></div>
+            </div>
+            <div class="d-flex align-items-center mb-3">
+              <div class="me-4">Porzioni:</div>
+              <div><strong>{{ recipe.servings }}</strong></div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-md-6 text-end">Data pubblicazione:</div>
-            <div class="col-md-6 text-start"><strong>{{ formatDate(recipe.date) }}</strong></div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 text-end">Tempo di preparazione:</div>
-            <div class="col-md-6 text-start"><strong>{{ recipe.prepTime }} minuti</strong></div>
-          </div>
-          <div class="row">
-            <div class="col-md-6 text-end">Porzioni:</div>
-            <div class="col-md-6 text-start"><strong>{{ recipe.servings }}</strong></div>
-          </div>
         </div>
-
-        <br>
 
         <div class="col text-center">
           <h6><strong>Ingredienti</strong></h6>
@@ -52,6 +50,7 @@
         </div>
       </div>
     </div>
+    <br><br>
   </div>
 </template>
 
@@ -82,6 +81,14 @@ export default defineComponent({
 </script>
 
 <style scoped>
+  .card{
+    background-color: #F1A661;
+    border-radius: 3%;
+    
+    box-shadow: 0px 2px 3px 0px #E38B29;
+    box-shadow: none 2px 3px 0px #E38B29;
+  }
+
   .custom-image {
     max-height: 300px;
     object-fit: cover;

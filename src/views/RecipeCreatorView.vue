@@ -1,9 +1,11 @@
 <template>
     <main>
-        <button class="btn btn-secondary mb-4" @click="changeShowDiv">
-            {{ showDiv ? 'Nascondi' : 'Crea Nuova Ricetta' }}
+        <button class="btn mb-4 btn-crea" @click="changeShowDiv">
+            <span v-show="!showDiv">Crea Nuova Ricetta</span>
+            <span v-show="showDiv">Nascondi</span>
         </button>
-        <div v-show="showDiv" class="container">
+        <div v-show="showDiv" class="container form-new-recipe">
+            <br>
             <h2 class="mb-4">Crea una nuova ricetta</h2>
             <form @submit.prevent="createRecipe">
                 <div class="mb-3">
@@ -179,6 +181,29 @@ export default class RecipeCreatorView extends Vue {
 </script>
 
 <style scoped>
+.btn-crea{
+    background-color: #E38B29;
+    border: 0px;
+    color: white;
+    font-weight: 800;
+    padding: 0.6rem;
+}
+
+.btn-crea:active {
+    background-color: rgb(180, 117, 0);
+    border: 0px;
+    color: white;
+    font-weight: 800;
+    padding: 0.6rem;
+}
+
+.form-new-recipe{
+  background-color: #F1A661;
+  border-radius: 3%;
+  box-shadow: 5px 5px 10px 1px #E38B29;
+}
+
+
 .loading-spinner-container {
   display: flex;
   justify-content: center;
@@ -196,7 +221,7 @@ export default class RecipeCreatorView extends Vue {
   width: 50px;
   height: 50px;
   border: 5px solid #ccc;
-  border-top-color: #3f51b5;
+  border-top-color: #F1A661;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
