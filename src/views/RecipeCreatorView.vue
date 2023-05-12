@@ -26,23 +26,23 @@
 
                 <div class="mb-3">
                     <label for="prepTime" class="form-label">Tempo di preparazione (minuti)</label>
-                    <input type="number" class="form-control" id="prepTime" v-model.number="newRecipe.prepTime" min="1" max="360" required />
+                    <input type="number" class="form-control" id="prepTime" v-model.number="newRecipe.prepTime" min="1" max="6000" required />
                 </div>
 
                 <div class="mb-3">
                     <label for="servings" class="form-label">Porzioni</label>
-                    <input type="number" class="form-control" id="servings" v-model.number="newRecipe.servings" min="1" max="30" required />
+                    <input type="number" class="form-control" id="servings" v-model.number="newRecipe.servings" min="1" max="200" required />
                 </div>
 
                 <div class="mb-3">
                     <label for="tags" class="form-label">Tags</label>
-                    <input type="text" class="form-control" id="tags" v-model="tagsInput" @input="onInput('tags')" maxlength="100" required />
+                    <input type="text" class="form-control" id="tags" v-model="tagsInput" @input="onInput('tags')" maxlength="100" />
                     <small class="form-text text-muted">Inserisci i tag separati da una virgola</small>
                 </div>
 
                 <div class="mb-3">
                     <label for="image" class="form-label">Carica immagine</label>
-                    <input type="file" class="form-control" id="image" @change="uploadImage" accept="image/*" required />
+                    <input type="file" class="form-control" id="image" @change="uploadImage" accept="image/*" required/>
                 </div>
 
                 <button type="submit" class="btn btn-primary" :disabled="isLoading">Crea ricetta</button>
@@ -51,7 +51,7 @@
 
         <br>
         <hr/>
-        <hr/>
+        <br>
         <br>
 
         <h3>Lista Ricette Pubblicate</h3>
@@ -60,6 +60,7 @@
             :key="id"
             :recipe="recipe"
             :recipeId="id"
+            @loading-state-changed="updateIsLoading"
         ></RecipeCard>
 
         <div v-if="isLoading" class="loading-spinner-container">
@@ -75,6 +76,8 @@ import { useStore } from 'vuex';
 import { Recipe, createRecipe } from '@/recipe';
 import { storage } from '@/firebase/index';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
+import Swal from 'sweetalert2';
 
 @Options({
   components: {
@@ -98,19 +101,52 @@ export default class RecipeCreatorView extends Vue {
         this.store.dispatch('getRecipes');
     }
 
+    showErrorAlert(message: string) {
+      this.$swal({
+        title: 'Si è verificato un problema',
+        text: message,
+        icon: 'error',
+      });
+    }
+
+    showToast(title: string) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            },
+        });
+
+        Toast.fire({
+            icon: "success",
+            title: title,
+        });
+    }
+
     createRecipe = async () => {
         this.isLoading = true;
         try {
             // Controlla se un'immagine è stata caricata
             if (!this.imageFile) {
-                alert("Seleziona un'immagine");
+                this.$swal({
+                    title: "Seleziona un'immagine",
+                    text: "",
+                    icon: 'question',
+                });
                 return;
             }
 
             // carica l'immagine su firebase storage e prende il riferimento
             try {
                 // Aggiungi il codice per caricare l'immagine su Firebase Storage e ottenere il suo URL di download
-                const storageRef = ref(storage, `imagesRecipes/${this.imageFile.name}`);
+                // Genera un UUID come prefisso per il nome del file
+                const uniqueFileName = `${uuidv4()}-${this.imageFile.name}`;
+                const storageRef = ref(storage, `imagesRecipes/${uniqueFileName}`);
                 const snapshot = await uploadBytes(storageRef, this.imageFile);
                 const downloadURL = await getDownloadURL(snapshot.ref);
     
@@ -118,7 +154,7 @@ export default class RecipeCreatorView extends Vue {
                 this.newRecipe.imageURL = downloadURL;
             } catch (error) {
                 console.error("Errore durante il caricamento dell'immagine su firebase storage:", error);
-                alert("Si è verificato un errore durante il caricamento dell'immagine sul database. Riprova.");
+                this.showErrorAlert("Si è verificato un errore durante il caricamento dell'immagine sul database. Riprova.");
                 this.isLoading = false;
                 return;
             }
@@ -134,12 +170,11 @@ export default class RecipeCreatorView extends Vue {
             this.ingredientsInput = '';
             this.tagsInput = '';
             this.showDiv = false;
-            this.imageFile = null;
-            alert("Nuova ricetta creata");
+            this.showToast("Nuova ricetta creata");
                 
         } catch (error) {
             console.error("Errore durante il caricamento della nuova ricetta nel database:", error);
-            alert("Si è verificato un errore durante il caricamento della nuova ricetta nel database. Riprova.");
+            this.showErrorAlert("Si è verificato un errore durante il caricamento della nuova ricetta nel database. Riprova.");
         }
         finally {
             this.isLoading = false;
@@ -164,6 +199,10 @@ export default class RecipeCreatorView extends Vue {
         if (file) {
             this.imageFile = file;
         }
+    }
+
+    updateIsLoading(newValue: boolean) {
+      this.isLoading = newValue;
     }
 
     get recipes() {

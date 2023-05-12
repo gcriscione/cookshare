@@ -1,6 +1,6 @@
 import { createStore } from 'vuex';
 import router from "@/router";
-import { auth, db } from '@/firebase';
+import { auth, db, storage } from '@/firebase';
 import { User } from '@firebase/auth'
 import { 
   createUserWithEmailAndPassword, 
@@ -14,11 +14,17 @@ import {
   addDoc,
   getDocs,
   doc,
+  getDoc,
   updateDoc,
   deleteDoc,
   query,
-  where
+  where,
+  FirestoreError
 } from 'firebase/firestore';
+import { 
+  ref,
+  deleteObject
+} from 'firebase/storage';
 import { Recipe, Recipes } from '@/recipe';
 
 // Interfaccia dello stato
@@ -157,7 +163,6 @@ export default createStore({
       await createUserWithEmailAndPassword(auth, email, password).then((userCredential) => {
 
         //se non ci sono eccezioni aggiorna lo stato utente ed effettua un router alla home
-        alert("Registrazione avvenuta con successo");
         commit('SET_USER', userCredential.user);
         router.push('/');
       })
@@ -252,7 +257,20 @@ export default createStore({
 
         commit('SET_RECIPES', recipes);
       } catch (error) {
-        throw new Error(`Errore scaricamento ricette:\n${error}`);
+        if (error instanceof FirestoreError) {
+          // Controlla il codice dell'errore
+          if (error.code === "permission-denied") {
+            // Errore 403: le regole di sicurezza di Firebase hanno impedito l'accesso
+            throw new Error("Accesso negato: Non hai il permesso per scaricare queste ricette");
+          } else if (error.code === "unavailable" || error.code === "deadline-exceeded") {
+            // Problema di connessione o timeout
+            throw new Error("Problema di connessione: Si è verificato un problema di connessione durante lo scaricamento delle ricette personali. Si prega di riprovare.");
+          } else {
+            throw new Error(`Errore scaricamento ricette personali dal database:\n${error.message}`);
+          }
+        } else {
+          throw new Error(`Errore scaricamento ricette personali:\n${error}`);
+        }
       }
     },
     
@@ -277,7 +295,20 @@ export default createStore({
         
         commit('SET_SOCIAL_RECIPES', socialRecipes);
       } catch (error) {
-        throw new Error(`Errore scaricamento ricette degli altri utenti:\n${error}`);
+        if (error instanceof FirestoreError) {
+          // Controlla il codice dell'errore
+          if (error.code === "permission-denied") {
+            // Errore 403: le regole di sicurezza di Firebase hanno impedito l'accesso
+            throw new Error("Accesso negato: Non hai il permesso per scaricare le ricette degli altri utenti.");
+          } else if (error.code === "unavailable" || error.code === "deadline-exceeded") {
+            // Problema di connessione o timeout
+            throw new Error("Problema di connessione: Si è verificato un problema di connessione durante lo scaricamento ricette degli altri utenti. Si prega di riprovare.");
+          } else {
+            throw new Error(`Errore scaricamento ricette degli altri utenti nel database:\n${error.message}`);
+          }
+        } else {
+          throw new Error(`Errore scaricamento ricette degli altri utenti:\n${error}`);
+        }
       }
     },
 
@@ -289,7 +320,7 @@ export default createStore({
           throw new Error("Utente non loggato");
         } 
 
-        // crea un riferimento collezione che contiene tutti i documenti delle ricette dell'utente corrente (users/USER_ID/recipes/)
+        // crea un riferimento collezione che contiene tutti i documenti delle ricette dell'utente corrente
         const userRecipesRef = collection(db, "recipes");
 
         // aggiunge alla collezione recipes il documento che contiene la nuova ricetta
@@ -299,7 +330,20 @@ export default createStore({
         await this.dispatch('getRecipes');
         await this.dispatch('getSocialRecipes');
       } catch (error) {
-        throw new Error(`Errore salvataggio nuova ricetta:\n${error}`);
+        if (error instanceof FirestoreError) {
+          // Controlla il codice dell'errore
+          if (error.code === "permission-denied") {
+            // Errore 403: le regole di sicurezza di Firebase hanno impedito l'accesso
+            throw new Error("Accesso negato: Non hai il permesso per creare questa ricetta.");
+          } else if (error.code === "unavailable" || error.code === "deadline-exceeded") {
+            // Problema di connessione o timeout
+            throw new Error("Problema di connessione: Si è verificato un problema di connessione durante la creazione della ricetta. Si prega di riprovare.");
+          } else {
+            throw new Error(`Errore salvataggio nuova ricetta nel database:\n${error.message}`);
+          }
+        } else {
+          throw new Error(`Errore salvataggio nuova ricetta:\n${error}`);
+        }
       }
     },
 
@@ -321,7 +365,20 @@ export default createStore({
         await this.dispatch('getRecipes');
         await this.dispatch('getSocialRecipes');
       } catch (error) {
-        throw new Error(`Errore modifica:\n${error}`);
+        if (error instanceof FirestoreError) {
+          // Controlla il codice dell'errore
+          if (error.code === "permission-denied") {
+            // Errore 403: le regole di sicurezza di Firebase hanno impedito l'accesso
+            throw new Error("Accesso negato: Non hai il permesso per modificare questa ricetta.");
+          } else if (error.code === "unavailable" || error.code === "deadline-exceeded") {
+            // Problema di connessione o timeout
+            throw new Error("Problema di connessione: Si è verificato un problema di connessione durante la modifica della ricetta. Si prega di riprovare.");
+          } else {
+            throw new Error(`Errore modifica ricetta nel database:\n${error.message}`);
+          }
+        } else {
+          throw new Error(`Errore modifica ricetta:\n${error}`);
+        }
       }
     },
 
@@ -339,6 +396,16 @@ export default createStore({
         // crea un riferimento al documento della ricetta che si desidera eliminare
         const recipeDocRef = doc(userRecipesRef, recipeId);
 
+        // ottieni il documento della ricetta per accedere all'URL dell'immagine
+        const recipeDoc = await getDoc(recipeDocRef);
+        const recipeData = recipeDoc.data();
+
+        // elimina l'immagine dal Firebase Storage utilizzando l'URL dell'immagine
+        if (recipeData && recipeData.imageURL) {
+          const imageRef = ref(storage, recipeData.imageURL);
+          await deleteObject(imageRef);
+        }
+
         // elimina il documento della ricetta utilizzando deleteDoc
         await deleteDoc(recipeDocRef);
 
@@ -346,7 +413,20 @@ export default createStore({
         await this.dispatch('getRecipes');
         await this.dispatch('getSocialRecipes');
       } catch (error) {
-        throw new Error(`Errore cancellazione:\n${error}`);
+        if (error instanceof FirestoreError) {
+          // Controlla il codice dell'errore
+          if (error.code === "permission-denied") {
+            // Errore 403: le regole di sicurezza di Firebase hanno impedito l'accesso
+            throw new Error("Accesso negato: Non hai il permesso per cancellazione questa ricetta.");
+          } else if (error.code === "unavailable" || error.code === "deadline-exceeded") {
+            // Problema di connessione o timeout
+            throw new Error("Problema di connessione: Si è verificato un problema di connessione durante la cancellazione della ricetta. Si prega di riprovare.");
+          } else {
+            throw new Error(`Errore cancellazione ricetta nel database:\n${error.message}`);
+          }
+        } else {
+          throw new Error(`Errore cancellazione ricetta nel database:\n${error}`);
+        }
       }
     }
 

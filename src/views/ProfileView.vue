@@ -1,11 +1,9 @@
 <template>
   <div>
-    <h3>Pagina Profilo utente</h3>
-    <h6>{{ email_user }}</h6>
+    <h1>Pagina Profilo utente</h1>
+    <h4 @click="showAlert">{{ email_user }}</h4>
   </div>
   <div  class="container">
-    <button>Elimina Account</button>
-    <button>Cambia Password</button>
   </div>
 </template>
 
@@ -16,6 +14,13 @@ import { useStore } from 'vuex';
 export default class ProfileView extends Vue{
   private store = useStore();
   
+  showAlert() {
+    this.$swal({
+      title: 'Benvenuto',
+      text: this.email_user,
+      icon: 'success',
+    });
+  }
 
   get email_user(){
     return this.store.getters.GET_EMAIL;

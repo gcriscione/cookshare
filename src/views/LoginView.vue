@@ -11,8 +11,6 @@
               placeholder="esempio@gmail.com"
               autocomplete="username"
               v-model="register_form.email"
-              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-              title="Inserisci un indirizzo email valido"
               required
             />
           </div>
@@ -39,8 +37,6 @@
               placeholder="esempio@gmail.com"
               autocomplete="username"
               v-model="login_form.email"
-              pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-              title="Inserisci un indirizzo email valido"
               required
             />
           </div>
@@ -63,148 +59,120 @@
         <button class="btn btn-secondary" @click="loginWithGoogle">Login with Google</button>
       </div>
     </section>
+    <div v-if="isLoading" class="loading-spinner-container">
+        <div class="loading-spinner"></div>
+    </div>
   </main>
 </template>
 
 
 <script lang="ts">
-import { ref } from 'vue'
 import { useStore } from 'vuex'
+import { Vue } from 'vue-class-component';
+import Swal from 'sweetalert2';
 
-export default {
-    setup(){
-        const login_form = ref({});
-        const register_form = ref({});
-        const store = useStore();
+export default class LoginView extends Vue {
 
-        const login = async () => {
-          try {
-            await store.dispatch('login', login_form.value);
-          } catch (error: unknown) {
-            if (error instanceof Error) {
-              alert("Errore Login\n"+error.message);
-              console.error("Errore nel login con email e password:\n"+error.message);
-            } else {
-              console.error("Errore nel login con email e password:\n"+error);
-            }
-          }
-        }
+  private login_form = {
+    email: '',
+    password: '',
+  };
+  private register_form = {
+    email: '',
+    password: '',
+  };
+  private store = useStore();
+  private isLoading = false;
 
-        const loginWithGoogle = async () => {
-          try {
-            await store.dispatch('loginWithGoogle');
-          } catch (error: unknown) {
-            if (error instanceof Error) {
-              alert("Errore Login\n"+error.message);
-              console.error("Errore nel login con google:\n"+error.message);
-            } else {
-              console.error("Errore nel login con google:\n"+error);
-            }
-          }
-        }
-
-        const register = async () =>{
-          try {
-            await store.dispatch('register', register_form.value);
-          } catch (error: unknown) {
-            if (error instanceof Error) {
-              alert("Errore registrazione\n"+error.message);
-              console.error("Errore nella registrazione con email e password:\n"+error.message);
-            } else {
-              console.error("Errore nella registrazione con email e password:\n"+error);
-            }
-          }
-        }
-
-        return {
-            login_form,
-            register_form,
-            login,
-            loginWithGoogle,
-            register
-        }
+  login = async () => {
+    this.isLoading = true;
+    try {
+      await this.store.dispatch('login', this.login_form);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.showErrorAlert("Errore Login", error.message);
+        console.error("Errore nel login con email e password:\n"+error.message);
+      } else {
+        this.showErrorAlert("Errore sconosciuto nel Login", "");
+        console.error("Errore nel login con email e password:\n"+error);
+      }
     }
+    this.isLoading = false;
+  }
+
+  loginWithGoogle = async () => {
+    this.isLoading = true;
+    try {
+      await this.store.dispatch('loginWithGoogle');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.showErrorAlert("Errore Login", error.message);
+        console.error("Errore nel login con google:\n"+error.message);
+      } else {
+        this.showErrorAlert("Errore sconosciuto nel Login con google", "");
+        console.error("Errore sconosciuto nel Login con google:\n"+error);
+      }
+    }
+    this.isLoading = false;
+  }
+
+  register = async () =>{
+    this.isLoading = true;
+    try {
+      await this.store.dispatch('register', this.register_form);
+      Swal.fire("Registrazione avvenuta con successo", "", "success");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.showErrorAlert("Errore registrazione", error.message);
+        console.error("Errore nella registrazione con email e password:\n"+error.message);
+      } else {
+        this.showErrorAlert("Errore sconosciuto nella registrazione", "");
+        console.error("Errore sconosciuto nella registrazione con email e password:\n"+error);
+      }
+    }
+    this.isLoading = false;
+  }    
+
+  showErrorAlert(title: string, message: string) {
+    Swal.fire(
+      title,
+      message,
+      'error'
+    )
+  } 
 }
 </script>
 
 
 <style>
-    /* .forms {
-        display: flex;
-        min-height: 100vh;
-    }
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
 
-    form {
-        flex: 1 1 0%;
-        padding: 8rem 1rem 1rem;
-    }
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #ccc;
+  border-top-color: #F1A661;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
-    form.register {
-        color: white;
-        background-color: rgb(245, 66, 101);
-        background-image: linear-gradient(
-            to bottom right,
-            rgb(245, 66, 101) 0%,
-            rgb(128, 28, 60) 100%
-        );
-    }
-
-    h2 {
-        font-size: 2rem;
-        text-transform: uppercase;
-        margin-bottom: 2rem;
-    }
-
-    input{
-        appearance: none;
-        border: none;
-        outline: none;
-        background: none;
-
-        display: block;
-        width: 100%;
-        max-width: 400px;
-        margin: 0 auto;
-        font-size: 1.5rem;
-        margin-bottom: 2rem;
-        padding: 0.5rem 0rem;
-    }
-
-    input:not([type="submit"]) {
-        opacity: 0.8;
-        transition-delay: 0.4s;
-    }
-
-    input:focut:not([type="submit"]) {
-        opacity: 1;
-    }
-
-    input::placeholder {
-        color: inherit;
-    }
-
-    form.login  input:not([type="submit"]){
-        color: #2c3e50;
-        border-bottom: 2px solid #2c3e50;
-    }
-
-    form.login  input[type="submit"]{
-        background-color: rgb(245, 66, 101);
-        color: #FFF;
-        font-weight: 700;
-        padding: 1rem 2 rem;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        text-transform: uppercase;
-    }
-
-    form.register  input[type="submit"]{
-        background-color: #FFF;
-        color: rgb(245, 66, 101);
-        font-weight: 700;
-        padding: 1rem 2 rem;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        text-transform: uppercase;
-    } */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 </style>

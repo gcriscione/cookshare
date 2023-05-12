@@ -35,14 +35,23 @@ export default class HomeView extends Vue {
       await this.store.dispatch('getSocialRecipes');
     } catch (error: unknown) {
       if (error instanceof Error) {
-        alert("Errore caricamento ricette\n"+error.message);
+        this.showErrorAlert(error.message);
         console.error("Errore nel caricamento delle ricette della home\n"+error.message);
       } else {
-        console.error("Errore nel caricamento delle ricette della home\n"+error);
+        this.showErrorAlert("Errore sconosciuto nel caricamento ricette");
+        console.error("Errore sconosciuto nel caricamento delle ricette della home\n"+error);
       }
     }finally{
       this.isLoading = false;
     }
+  }
+
+  showErrorAlert(message: string) {
+    this.$swal({
+      title: 'Errore caricamento ricette',
+      text: message,
+      icon: 'error',
+    });
   }
 
   get SocialRecipes(){

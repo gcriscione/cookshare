@@ -4,6 +4,16 @@
             <br>
             <form>
               <div class="mb-3">
+                  <label for="imageURL" class="form-label">Immagine</label>
+                  <img
+                    id="image" 
+                    :src="recipe.imageURL"
+                    :alt="recipe.title"
+                    class="card-img-top img-fluid custom-image"
+                  />
+              </div>
+
+              <div class="mb-3">
                   <label for="title" class="form-label">Titolo</label>
                   <input 
                     type="text"
@@ -50,7 +60,7 @@
                     id="author"
                     v-model="localRecipe.email_author"
                     maxlength="50"
-                    :readonly="true"
+                    disabled
                   required />
               </div>
 
@@ -96,16 +106,6 @@
                   <small class="form-text text-muted">Inserisci i tag separati da una virgola</small>
               </div>
 
-              <div class="mb-3">
-                  <label for="imageURL" class="form-label">URL dell'immagine</label>
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="imageURL"
-                    v-model="localRecipe.imageURL"
-                  required />
-              </div>
-
               <button :disabled="isUnchanged()" @click.prevent="editRecipe" class="btn btn-warning">Modifica</button>
               <button @click.prevent="resetRecipe" class="btn btn-success">Ripristina</button>
               <button @click.prevent="deleteRecipe" class="btn btn-danger">Elimina</button>
@@ -120,6 +120,7 @@
 import { defineComponent } from 'vue';
 import { Recipe } from '@/recipe';
 import { useStore } from 'vuex';
+import Swal from 'sweetalert2';
 
 export default defineComponent({
   name: 'RecipeCard',
@@ -135,45 +136,80 @@ export default defineComponent({
   },
   methods: {
     async editRecipe() {
+      this.$emit('loading-state-changed', true);
       try {
         await this.store.dispatch('editRecipe', { 'recipeId': this.recipeId, 'updatedRecipe': this.localRecipe });
         // Mostra un messaggio di successo
-        alert('Ricetta modificata con successo');
-        location.reload();
+        this.showToast('Ricetta modificata con successo');
       } catch (error: unknown) {
         if (error instanceof Error) {
-          alert("Errore nella modifica della ricetta");
+          this.showErrorAlert(error.message);
           console.log("Errore nella modifica della ricetta:\n" + error.message);
         } else {
+          this.showErrorAlert("Errore sconosciuto durante la modifica della ricetta");
           console.log("Errore sconosciuto nella modifica della ricetta:\n" + error);
         }
       }
+      this.$emit('loading-state-changed', false);
     },
+
     async deleteRecipe() {
+      this.$emit('loading-state-changed', true);
       try {
         await this.store.dispatch('removeRecipe', this.recipeId);
-        // Mostra un messaggio di successo
-        alert('Ricetta eliminata con successo');
-        location.reload();
+
+        this.showToast('Ricetta eliminata con successo');
       } catch (error: unknown) {
         if (error instanceof Error) {
-          alert("Errore nell'eliminazione della ricetta");
+          this.showErrorAlert(error.message);
           console.log("Errore nell'eliminazione della ricetta:\n"+error.message);
         } else {
-          console.log("Errore sconosciuto nell'eliminazione della ricetta:\n"+error);
+          this.showErrorAlert("Errore sconosciuto durante l'eliminazione della ricetta");
+          console.log("Errore sconosciuto durante l'eliminazione della ricetta:\n"+error);
         }
       }
+      this.$emit('loading-state-changed', false);
     },
+
     resetRecipe(){
       this.localRecipe = {...this.copieRecipe },
       this.editableElementId = null;
     },
+
     makeEditable(event: Event) {
       const target = event.target as HTMLInputElement;
       this.editableElementId = target.id;
     },
+
     isUnchanged() {
       return JSON.stringify(this.localRecipe) === JSON.stringify(this.copieRecipe);
+    },
+    
+    showErrorAlert(message: string) {
+      this.$swal({
+        title: 'Si è verificato un problema',
+        text: message,
+        icon: 'error',
+      });
+    },
+
+    showToast(title: string) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            },
+        });
+
+        Toast.fire({
+            icon: "success",
+            title: title,
+        });
     }
   },
   data() {
@@ -197,5 +233,10 @@ export default defineComponent({
 .btn{
   margin: 1rem;
   box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.445);
+}
+
+.custom-image {
+  max-height: 150px;
+  object-fit: cover;
 }
 </style>
