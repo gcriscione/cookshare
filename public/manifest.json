@@ -1,0 +1,15 @@
+{
+    "name": "CookShare",
+    "short_name": "CookShare",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "description": "Social dove condividere ricette di cucina",
+    "icons": [
+      {
+        "src": "img/icons/android-chrome-maskable-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      }
+    ]
+  }

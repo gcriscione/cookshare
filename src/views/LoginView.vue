@@ -70,6 +70,8 @@
 import { useStore } from 'vuex'
 import { Vue } from 'vue-class-component';
 import Swal from 'sweetalert2';
+import { getCurrentInstance } from 'vue';
+import notificationMixin from '@/notificationMixin';
 
 export default class LoginView extends Vue {
 
@@ -88,6 +90,7 @@ export default class LoginView extends Vue {
     this.isLoading = true;
     try {
       await this.store.dispatch('login', this.login_form);
+      this.sendNotification();
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.showErrorAlert("Errore Login", error.message);
@@ -104,6 +107,7 @@ export default class LoginView extends Vue {
     this.isLoading = true;
     try {
       await this.store.dispatch('loginWithGoogle');
+      this.sendNotification();
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.showErrorAlert("Errore Login", error.message);
@@ -121,6 +125,7 @@ export default class LoginView extends Vue {
     try {
       await this.store.dispatch('register', this.register_form);
       Swal.fire("Registrazione avvenuta con successo", "", "success");
+      this.sendNotification();
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.showErrorAlert("Errore registrazione", error.message);
@@ -140,6 +145,16 @@ export default class LoginView extends Vue {
       'error'
     )
   } 
+
+  sendNotification = async () => {
+    const title = 'Benvenuto su CookShare';
+    const body = '';
+    await (notificationMixin.methods.showNotification as (title: string, body: string) => void).call(
+      getCurrentInstance(),
+      title,
+      body
+    );
+  };
 }
 </script>
 

@@ -48,9 +48,11 @@
 <script lang="ts">
 import { useStore } from 'vuex'
 import { defineComponent, onBeforeMount } from 'vue';
+import notificationMixin from '@/notificationMixin';
 
 export default defineComponent({
   name: 'App',
+  mixins: [notificationMixin],
   setup() {
     const store = useStore();
     
@@ -58,7 +60,6 @@ export default defineComponent({
       store.dispatch('fetchUser');
     });
 
-    return {};
   },
 });
 </script>
