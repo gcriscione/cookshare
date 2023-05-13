@@ -2,66 +2,69 @@
     <main>
         <button class="btn mb-4 btn-crea" @click="changeShowDiv">
             <span v-show="!showDiv">Crea Nuova Ricetta</span>
-            <span v-show="showDiv">Nascondi</span>
+            <span v-show="showDiv">Modifica RIcette Salvate</span>
         </button>
-        <div v-show="showDiv" class="container form-new-recipe">
+
+        <div v-show="showDiv" >
+            <h1>Crea una nuova ricetta</h1>
             <br>
-            <h2 class="mb-4">Crea una nuova ricetta</h2>
-            <form @submit.prevent="createRecipe">
-                <div class="mb-3">
-                    <label for="title" class="form-label">Titolo</label>
-                    <input type="text" class="form-control" id="title" v-model="newRecipe.title" maxlength="50" required />
-                </div>
+            <div class="container form-new-recipe">
+                <form @submit.prevent="createRecipe">
+                    <br>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Titolo</label>
+                        <input type="text" class="form-control" id="title" v-model="newRecipe.title" maxlength="50" required />
+                    </div>
 
-                <div class="mb-3">
-                    <label for="description" class="form-label">Descrizione</label>
-                    <textarea class="form-control" id="description" v-model="newRecipe.description" rows="3" maxlength="1000" required></textarea>
-                </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Descrizione</label>
+                        <textarea class="form-control" id="description" v-model="newRecipe.description" rows="3" maxlength="1000" required></textarea>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="ingredients" class="form-label">Ingredienti</label>
-                    <textarea class="form-control" id="ingredients" v-model="ingredientsInput" @input="onInput('ingredients')" rows="3" maxlength="300" required></textarea>
-                    <small class="form-text text-muted">Inserisci gli ingredienti separati da una virgola</small>
-                </div>
+                    <div class="mb-3">
+                        <label for="ingredients" class="form-label">Ingredienti</label>
+                        <textarea class="form-control" id="ingredients" v-model="ingredientsInput" @input="onInput('ingredients')" rows="3" maxlength="300" required></textarea>
+                        <small class="form-text text-muted">Inserisci gli ingredienti separati da una virgola</small>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="prepTime" class="form-label">Tempo di preparazione (minuti)</label>
-                    <input type="number" class="form-control" id="prepTime" v-model.number="newRecipe.prepTime" min="1" max="6000" required />
-                </div>
+                    <div class="mb-3">
+                        <label for="prepTime" class="form-label">Tempo di preparazione (minuti)</label>
+                        <input type="number" class="form-control" id="prepTime" v-model.number="newRecipe.prepTime" min="1" max="6000" required />
+                    </div>
 
-                <div class="mb-3">
-                    <label for="servings" class="form-label">Porzioni</label>
-                    <input type="number" class="form-control" id="servings" v-model.number="newRecipe.servings" min="1" max="200" required />
-                </div>
+                    <div class="mb-3">
+                        <label for="servings" class="form-label">Porzioni</label>
+                        <input type="number" class="form-control" id="servings" v-model.number="newRecipe.servings" min="1" max="200" required />
+                    </div>
 
-                <div class="mb-3">
-                    <label for="tags" class="form-label">Tags</label>
-                    <input type="text" class="form-control" id="tags" v-model="tagsInput" @input="onInput('tags')" maxlength="100" />
-                    <small class="form-text text-muted">Inserisci i tag separati da una virgola</small>
-                </div>
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tags" v-model="tagsInput" @input="onInput('tags')" maxlength="100" />
+                        <small class="form-text text-muted">Inserisci i tag separati da una virgola</small>
+                    </div>
 
-                <div class="mb-3">
-                    <label for="image" class="form-label">Carica immagine</label>
-                    <input type="file" class="form-control" id="image" @change="uploadImage" accept="image/*" required/>
-                </div>
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Carica immagine</label>
+                        <input type="file" class="form-control" id="image" @change="uploadImage" accept="image/*" required/>
+                    </div>
 
-                <button type="submit" class="btn btn-primary" :disabled="isLoading">Crea ricetta</button>
-            </form>
+                    <button type="submit" class="btn btn-primary" :disabled="isLoading">Crea ricetta</button>
+                </form>
+                <br>
+            </div>
         </div>
 
-        <br>
-        <hr/>
-        <br>
-        <br>
-
-        <h3>Lista Ricette Pubblicate</h3>
-        <RecipeCard
-            v-for="(recipe, id) in recipes"
-            :key="id"
-            :recipe="recipe"
-            :recipeId="id"
-            @loading-state-changed="updateIsLoading"
-        ></RecipeCard>
+        <div v-show="!showDiv">
+            <h1>Lista Ricette Pubblicate</h1>
+            <br>
+            <RecipeCard
+                v-for="(recipe, id) in recipes"
+                :key="id"
+                :recipe="recipe"
+                :recipeId="id"
+                @loading-state-changed="updateIsLoading"
+            ></RecipeCard>
+        </div>
 
         <div v-if="isLoading" class="loading-spinner-container">
             <div class="loading-spinner"></div>
@@ -202,7 +205,13 @@ export default class RecipeCreatorView extends Vue {
     }
 
     updateIsLoading(newValue: boolean) {
-      this.isLoading = newValue;
+        this.isLoading = newValue;
+
+        if(newValue){
+            setTimeout(() => {
+                this.isLoading = false;
+                }, 3000);        
+        }
     }
 
     get recipes() {
@@ -240,6 +249,10 @@ export default class RecipeCreatorView extends Vue {
   background-color: #F1A661;
   border-radius: 3%;
   box-shadow: 5px 5px 10px 1px #E38B29;
+}
+
+label{
+    font-size: 2rem;
 }
 
 

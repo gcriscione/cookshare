@@ -28,13 +28,13 @@
             <li class="nav-item" v-if="(!$store.state.user)">
               <router-link class="nav-link" to="/login" active-class="active">Login</router-link>
             </li>
-            <li class="nav-item" v-if="$store.state.user">
+            <li class="nav-item" v-if="$store.state.user" style="font-size: 1.5rem">
               <button class="nav-link btn" @click="$store.dispatch('logout')">Logout</button>
             </li>
           </ul>
           <ul class="navbar-nav ms-auto">
             <li class="nav-item" v-if="$store.state.user">
-              <router-link class="nav-link" to="/login" active-class="active">Loggato</router-link>
+              <router-link class="nav-link disabled" to="/login">Loggato</router-link>
             </li>
           </ul>
         </div>
@@ -90,5 +90,9 @@ nav {
       color: #42b983;
     }
   }
+}
+
+a{
+  font-size: 1.5rem !important; 
 }
 </style>

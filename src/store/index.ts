@@ -399,16 +399,21 @@ export default createStore({
         // ottieni il documento della ricetta per accedere all'URL dell'immagine
         const recipeDoc = await getDoc(recipeDocRef);
         const recipeData = recipeDoc.data();
+        let imageRef = null;
 
-        // elimina l'immagine dal Firebase Storage utilizzando l'URL dell'immagine
+        // prende URL dell'immagine
         if (recipeData && recipeData.imageURL) {
-          const imageRef = ref(storage, recipeData.imageURL);
-          await deleteObject(imageRef);
+          imageRef = ref(storage, recipeData.imageURL);
         }
-
-        // elimina il documento della ricetta utilizzando deleteDoc
+        
+        // elimina il documento della ricetta
         await deleteDoc(recipeDocRef);
 
+        // elimina immagine salvata su firebase storage
+        if(imageRef){
+          await deleteObject(imageRef);
+        }
+        
         // invoca la funzione 'getRecipes' per aggiornare lo stato delle ricette dopo l'eliminazione
         await this.dispatch('getRecipes');
         await this.dispatch('getSocialRecipes');

@@ -167,8 +167,9 @@ export default defineComponent({
           this.showErrorAlert("Errore sconosciuto durante l'eliminazione della ricetta");
           console.log("Errore sconosciuto durante l'eliminazione della ricetta:\n"+error);
         }
+      }finally{
+        this.$emit('loading-state-changed', false);
       }
-      this.$emit('loading-state-changed', false);
     },
 
     resetRecipe(){
@@ -238,5 +239,9 @@ export default defineComponent({
 .custom-image {
   max-height: 150px;
   object-fit: cover;
+}
+
+label{
+    font-size: 2rem;
 }
 </style>
