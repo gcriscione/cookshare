@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getStorage } from 'firebase/storage';
-import { initializeFirestore, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 
 //configurazione del database di firebase
 const firebaseConfig = {
@@ -21,7 +21,7 @@ const auth = getAuth(app);
 const db = initializeFirestore(
   app,
   {
-    cacheSizeBytes: CACHE_SIZE_UNLIMITED
+    localCache: persistentLocalCache()
   }
 );
 const storage = getStorage(app);
